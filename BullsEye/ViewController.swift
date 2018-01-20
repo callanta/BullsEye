@@ -15,67 +15,134 @@ class ViewController: UIViewController {
     var score: Int = 0
     var round: Int = 0
     
-    
     @IBOutlet weak var slider: UISlider!
     @IBOutlet weak var targetLabel: UILabel!
     @IBOutlet weak var scoreLabel: UILabel!
     @IBOutlet weak var roundLabel: UILabel!
 
     
+    //--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        currentValue = lroundf(slider.value)
-        
         startNewRound()
-        
-        // Do any additional setup after loading the view, typically from a nib.
     }
 
+    
+    //--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    func updateLabels(){
-        targetLabel.text = String(targetValue)
-        scoreLabel.text = String(score)
-        roundLabel.text = String(round)
-    }
     
-    func startNewRound(){
-        
-        //reset the slider to the "home" position
-        currentValue = 50
-        slider.value = Float(currentValue)
-        
-        //generate a new target
-        targetValue = 1 + Int(arc4random_uniform(100))
-        
-        //increment the round
-        round = round + 1
-        
-        updateLabels()
-    }
-    
-    
-    @IBAction func sliderMoved(_ slider: UISlider){
-        currentValue = lroundf(slider.value)
-        print("The value of the slider is \(currentValue)")
+    //--------------------------------------------------------------------------------
+    // Get the game ready to play a round
+    //--------------------------------------------------------------------------------
+    func startNewRound() {
+        resetSlider()
+        chooseATarget()
+        updateRound()
+        updateScore()
     }
 
-    @IBAction func showAlert(){
+    
+    //--------------------------------------------------------------------------------
+    // Move the slider back to the "home" position
+    //--------------------------------------------------------------------------------
+    func resetSlider() {
+        currentValue = 50
+        slider.value = Float(currentValue)
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    // Generate a new target value
+    //--------------------------------------------------------------------------------
+    func chooseATarget() {
+        targetValue = 1 + Int(arc4random_uniform(100))
+        targetLabel.text = String(targetValue)
+    }
+    
+    //--------------------------------------------------------------------------------
+    // Update the round
+    //--------------------------------------------------------------------------------
+    func updateRound() {
+        round = round + 1
+        roundLabel.text = String(round)
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    // Update the score
+    //--------------------------------------------------------------------------------
+    func updateScore() {
+        
+        if round >= 2 {
+            let difference = abs(currentValue - targetValue)
+            
+            if difference == 0 {
+                score = score + 1000
+            } else {
+                score = score + difference
+            }
+        } else {
+            score = 0
+        }
+        
+        scoreLabel.text = String(score)
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    // Determine if the user it a bulls eye
+    //--------------------------------------------------------------------------------
+    func isBullsEye() -> String {
+        if currentValue == targetValue {
+            return "BULLS EYE!!!"
+        } else {
+            return "NOPE"
+        }
+    }
+    
+    
+    //--------------------------------------------------------------------------------
+    // Customer moves the slider
+    //--------------------------------------------------------------------------------
+    @IBAction func sliderMoved(_ slider: UISlider) {
+        currentValue = lroundf(slider.value)
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    // Customer taps "Start Over" Button
+    //--------------------------------------------------------------------------------
+    @IBAction func resetGame() {
+        round = 0
+        updateRound()
+        
+        score = 0
+        updateScore()
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    // Customer taps "Hit Me" Button
+    //--------------------------------------------------------------------------------
+    @IBAction func showAlert() {
+        let title = isBullsEye()
         let message = "The value of the current slider is: \(currentValue)"
         
-        let alert = UIAlertController(title: "alert title", message: message, preferredStyle: .alert)
-   
-        let action = UIAlertAction(title: "action title", style: .default, handler: nil)
-        
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+        let action = UIAlertAction(title: "Start a New Round", style: .default, handler: nil)
         alert.addAction(action)
-        
+
         present(alert, animated: true, completion: nil)
         
         startNewRound()
     }
-
+    
+    
 }
