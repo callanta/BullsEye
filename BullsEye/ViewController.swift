@@ -11,65 +11,78 @@ import UIKit
 class ViewController: UIViewController {
     
     var currentValue: Int = 0
-    var targetValue: Int = 0
-    var score: Int = 0
-    var round: Int = 0
-    
     @IBOutlet weak var slider: UISlider!
+
+    var targetValue: Int = 0
     @IBOutlet weak var targetLabel: UILabel!
+    
+    var score: Int = 0
     @IBOutlet weak var scoreLabel: UILabel!
+
+    var round: Int = 0
     @IBOutlet weak var roundLabel: UILabel!
+    
+    var difference: Int = 0
 
     
     //--------------------------------------------------------------------------------
+    // Method that runs on load of app
     //--------------------------------------------------------------------------------
     override func viewDidLoad() {
         super.viewDidLoad()
-        startNewRound()
+        initApp()
     }
 
     
     //--------------------------------------------------------------------------------
+    // Initialize the app to the starting values
     //--------------------------------------------------------------------------------
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    func initApp() {
+        initSlider()
+        initTarget()
+        updateRound(isStartOver: true)
+        updateScore(isStartOver: true)
     }
     
     
     //--------------------------------------------------------------------------------
-    // Get the game ready to play a round
+    // Get the game ready to play a new round
     //--------------------------------------------------------------------------------
     func startNewRound() {
-        resetSlider()
-        chooseATarget()
-        updateRound()
-        updateScore()
+        updateRound(isStartOver: false)
+        updateScore(isStartOver: false)
+        initSlider()
+        initTarget()
     }
 
     
     //--------------------------------------------------------------------------------
     // Move the slider back to the "home" position
     //--------------------------------------------------------------------------------
-    func resetSlider() {
+    func initSlider() {
         currentValue = 50
         slider.value = Float(currentValue)
     }
 
     
     //--------------------------------------------------------------------------------
-    // Generate a new target value
+    // Generate a target value
     //--------------------------------------------------------------------------------
-    func chooseATarget() {
+    func initTarget() {
         targetValue = 1 + Int(arc4random_uniform(100))
         targetLabel.text = String(targetValue)
     }
     
+    
     //--------------------------------------------------------------------------------
     // Update the round
     //--------------------------------------------------------------------------------
-    func updateRound() {
-        round = round + 1
+    func updateRound(isStartOver: Bool) {
+        if isStartOver {
+            round = 1
+        } else {
+            round = round + 1
+        }
         roundLabel.text = String(round)
     }
 
@@ -77,18 +90,19 @@ class ViewController: UIViewController {
     //--------------------------------------------------------------------------------
     // Update the score
     //--------------------------------------------------------------------------------
-    func updateScore() {
-        
-        if round >= 2 {
-            let difference = abs(currentValue - targetValue)
-            
-            if difference == 0 {
-                score = score + 1000
-            } else {
-                score = score + difference
-            }
-        } else {
+    func updateScore(isStartOver: Bool) {
+        if isStartOver {
             score = 0
+        } else {
+            if difference == 0 {
+                score = score + 100
+            } else if difference < 5 {
+                score = score + difference + 50
+            } else if difference < 10 {
+                score = score + difference + 10
+            } else {
+                score = score + 1
+            }
         }
         
         scoreLabel.text = String(score)
@@ -96,19 +110,23 @@ class ViewController: UIViewController {
 
     
     //--------------------------------------------------------------------------------
-    // Determine if the user it a bulls eye
+    // Determine the appropriate message for the player
     //--------------------------------------------------------------------------------
-    func isBullsEye() -> String {
-        if currentValue == targetValue {
-            return "BULLS EYE!!!"
+    func determineTitle() -> String {
+        if difference == 0 {
+            return "BULLS EYE!!!!"
+        } else if difference < 5 {
+            return "Pretty Close, Good Job!!"
+        } else if difference < 10 {
+            return "Well, at least you tried."
         } else {
-            return "NOPE"
+            return "Dude, not even close!"
         }
     }
     
     
     //--------------------------------------------------------------------------------
-    // Customer moves the slider
+    // Player moves the slider
     //--------------------------------------------------------------------------------
     @IBAction func sliderMoved(_ slider: UISlider) {
         currentValue = lroundf(slider.value)
@@ -116,33 +134,46 @@ class ViewController: UIViewController {
 
     
     //--------------------------------------------------------------------------------
-    // Customer taps "Start Over" Button
+    // Player taps "Start Over" Button
     //--------------------------------------------------------------------------------
     @IBAction func resetGame() {
-        round = 0
-        updateRound()
-        
-        score = 0
-        updateScore()
+        initApp()
     }
 
     
     //--------------------------------------------------------------------------------
-    // Customer taps "Hit Me" Button
+    // Player taps "Hit Me" Button
     //--------------------------------------------------------------------------------
     @IBAction func showAlert() {
-        let title = isBullsEye()
-        let message = "The value of the current slider is: \(currentValue)"
+        
+        difference = abs(targetValue - currentValue)
+        
+        let title = determineTitle()
+
+        let message = "The target was: \(targetValue)" +
+            "\nYou moved the slider to: \(currentValue)" +
+            "\nThe difference is: \(difference)"
         
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
-        let action = UIAlertAction(title: "Start a New Round", style: .default, handler: nil)
+        let action = UIAlertAction(title: "Start a New Round", style: .default, handler: {
+            action in
+            self.startNewRound()
+        })
+        
         alert.addAction(action)
 
         present(alert, animated: true, completion: nil)
         
-        startNewRound()
     }
     
+
+    //--------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+
     
 }
