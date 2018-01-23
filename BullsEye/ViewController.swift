@@ -34,6 +34,8 @@ class ViewController: UIViewController {
     }
 
     
+    
+    
     //--------------------------------------------------------------------------------
     // Initialize the app to the starting values
     //--------------------------------------------------------------------------------
@@ -42,8 +44,31 @@ class ViewController: UIViewController {
         initTarget()
         updateRound(isStartOver: true)
         updateScore(isStartOver: true)
+        styleTheSlider()
     }
+
     
+    //--------------------------------------------------------------------------------
+    // Style the Slider
+    //--------------------------------------------------------------------------------
+    func styleTheSlider() {
+        let thumbImageNormal = #imageLiteral(resourceName: "SliderThumb-Normal")
+        slider.setThumbImage(thumbImageNormal, for: .normal)
+        
+        let thumbImageHighlight = #imageLiteral(resourceName: "SliderThumb-Highlighted")
+        slider.setThumbImage(thumbImageHighlight, for: .highlighted)
+        
+        let insets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 14)
+        
+        let trackLeftImage = #imageLiteral(resourceName: "SliderTrackLeft")
+        let trackLeftImageResizeable = trackLeftImage.resizableImage(withCapInsets: insets)
+        slider.setMinimumTrackImage(trackLeftImageResizeable, for: .normal)
+
+        let trackRightImage = #imageLiteral(resourceName: "SliderTrackRight")
+        let trackRightImageResizeable = trackRightImage.resizableImage(withCapInsets: insets)
+        slider.setMaximumTrackImage(trackRightImageResizeable, for: .normal)
+    }
+
     
     //--------------------------------------------------------------------------------
     // Get the game ready to play a new round
